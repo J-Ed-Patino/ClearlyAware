@@ -9,7 +9,7 @@ def create_user(db: Session, user_data: UserCreate) -> User:
     user = User(email=user_data.email, password_hash=hashed)
     db.add(user)
     db.commit()
-    db.refresh()
+    db.refresh(user)
     return user
 
 
@@ -26,7 +26,7 @@ def authenticate_user(db: Session, email: str, password: str) -> User | None:
     return user
 
 def login_user(db: Session, email: str, password: str) -> str | None:
-    user = authenticate_user(email, password)
+    user = authenticate_user(db, email, password)
     if not user:
         return None
     return create_access_token(str(user.id))
