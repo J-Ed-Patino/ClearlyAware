@@ -23,5 +23,5 @@ def create_access_token(user_id: str) -> str:
 def decode_access_token(token: str) -> dict | None:
     try:
         return jwt.decode(token, settings.secret_key, algorithms="HS256")
-    except jwt.JWTERROR:
+    except jwt.JWTError:
         return None
