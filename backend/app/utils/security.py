@@ -6,8 +6,6 @@ from app.config import settings
 password_hasher = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
-    print(f"Password length: {len(password)}")
-    print(f"Password: {password}")
     return password_hasher.hash(password)
 
 

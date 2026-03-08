@@ -26,29 +26,34 @@ def get_dashboard_summary( db: Session, user_id: UUID, period_type: str = "month
         today = date.today()
         start_date = date(today.year, today.month, 1)
 
-    budgets = db.query(Budget).filter(
-        Budget.user_id == user_id,
-        Budget.period_type == period_type,
-        Budget.start_date == start_date
-    ).all()
+    results = (
+        db.query(Category, Budget)
+        .outerjoin(
+            Budget,
+            (Budget.category_id == Category.id)
+            & (Budget.user_id == user_id)
+            & (Budget.period_type == period_type)
+            & (Budget.start_date == start_date),
+        )
+        .all()
+    )
 
     categories_summary = []
     total_budgeted = 0.0
     total_spent = 0.0
 
-    for budget in budgets:
-        category = db.query(Category).filter(Category.id == budget.category_id).first()
-        category_name = category.name if category else "Unknown"
+    for category, budget in results:
+        category_name = category.name
         
         # Mock data for now
         spent = MOCK_TRANSACTIONS.get(category_name, 0.0)
-        budgeted = float(budget.amount)
-        
+        budgeted = float(budget.amount) if budget else 0.0
+
         percent = int((spent / budgeted * 100)) if budgeted > 0 else 0
         remaining = budgeted - spent
 
         categories_summary.append(CategorySummary(
-            category_id=str(budget.category_id),
+            category_id=str(category.id),
             category_name=category_name,
             budgeted=budgeted,
             spent=spent,

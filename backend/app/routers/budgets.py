@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Literal, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -18,7 +19,7 @@ def create(budget_date: BudgetCreate, db: Session = Depends(get_db), current_use
 
 
 @router.get("", response_model=list[BudgetResponse])
-def list_budgets(period_type: str = None, start_date: date = None, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def list_budgets(period_type: Optional[Literal["monthly", "weekly", "yearly"]] = None, start_date: date = None, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return get_budgets(db, current_user.id, period_type, start_date)
 
 
