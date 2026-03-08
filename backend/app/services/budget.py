@@ -23,7 +23,7 @@ def get_budgets(db: Session, user_id: UUID, period_type: str = None, start_date:
     if period_type:
         query = query.filter(Budget.period_type == period_type)
     if start_date:
-        query = query.filter(Budget.period_type == period_type)
+        query = query.filter(Budget.start_date == start_date)
     return query.all()
 
 

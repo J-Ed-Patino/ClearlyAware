@@ -1,12 +1,15 @@
 from datetime import date, datetime
+from typing import Literal
 from uuid import UUID
 from pydantic import BaseModel, Field
+
+VALID_PERIOD_TYPES = Literal["monthly", "weekly", "yearly"]
 
 
 class BudgetCreate(BaseModel):
     category_id: UUID
     amount: float = Field(gt=0)
-    period_type: str = "monthly"
+    period_type: VALID_PERIOD_TYPES = "monthly"
     start_date: date
 
 
@@ -25,5 +28,5 @@ class BudgetResponse(BaseModel):
     updated_at: datetime
 
     class Config:
-        from_attribute = True
+        from_attributes = True
 
