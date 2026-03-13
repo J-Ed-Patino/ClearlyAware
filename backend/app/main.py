@@ -3,9 +3,11 @@ from fastapi import FastAPI
 from app.models.user import User
 from app.models.category import Category
 from app.models.budget import Budget
+from app.models.plaid_item import PlaidItem
 from app.routers.auth import router as auth_router
 from app.routers.budgets import router as budget_router
 from app.routers.dashboard import router as dashboard_router
+from app.routers.plaid import router as plaid_router
 
 PREFIX = "/api/v1"
 
@@ -14,6 +16,7 @@ app = FastAPI( title="ClearlyAware", description="Personal budget tracker with b
 app.include_router(auth_router, prefix=PREFIX)
 app.include_router(budget_router, prefix=PREFIX )
 app.include_router(dashboard_router, prefix=PREFIX)
+app.include_router(plaid_router, prefix=PREFIX)
 
 @app.get("/")
 def read_root():
