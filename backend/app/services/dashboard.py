@@ -1,30 +1,45 @@
-from datetime import date
+from datetime import date, timedelta
 from uuid import UUID
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models.budget import Budget
 from app.models.category import Category
+from app.models.transaction import Transaction
 from app.schemas.dashboard import DashboardSummary, CategorySummary
 
 
-# Mock data for testing until Plaid is integrated
-MOCK_TRANSACTIONS = {
-    "Groceries": 320.45,
-    "Dining": 187.30,
-    "Transport": 95.00,
-    "Utilities": 150.00,
-    "Entertainment": 75.50,
-    "Shopping": 225.00,
-    "Health": 50.00,
-    "Other": 45.00,
-}
+def get_period_end_date(start_date: date, period_type: str) -> date:
+    if period_type == "weekly":
+        return start_date + timedelta(days=7)
+    elif period_type == "yearly":
+        return start_date.replace(year=start_date.year + 1)
+    else:  # monthly
+        if start_date.month == 12:
+            return start_date.replace(year=start_date.year + 1, month=1)
+        return start_date.replace(month=start_date.month + 1)
 
 
-def get_dashboard_summary( db: Session, user_id: UUID, period_type: str = "monthly", start_date: date = None ) -> DashboardSummary:
+def get_dashboard_summary(db: Session, user_id: UUID, period_type: str = "monthly", start_date: date = None) -> DashboardSummary:
     if not start_date:
         today = date.today()
         start_date = date(today.year, today.month, 1)
+
+    end_date = get_period_end_date(start_date, period_type)
+
+    # Sum real transactions by category for the period, excluding pending
+    spent_by_category = dict(
+        db.query(Transaction.category_name, func.sum(Transaction.amount))
+        .filter(
+            Transaction.user_id == user_id,
+            Transaction.date >= start_date,
+            Transaction.date < end_date,
+            Transaction.pending == False,
+        )
+        .group_by(Transaction.category_name)
+        .all()
+    )
 
     results = (
         db.query(Category, Budget)
@@ -44,9 +59,7 @@ def get_dashboard_summary( db: Session, user_id: UUID, period_type: str = "month
 
     for category, budget in results:
         category_name = category.name
-        
-        # Mock data for now
-        spent = MOCK_TRANSACTIONS.get(category_name, 0.0)
+        spent = float(spent_by_category.get(category_name, 0.0))
         budgeted = float(budget.amount) if budget else 0.0
 
         percent = int((spent / budgeted * 100)) if budgeted > 0 else 0
