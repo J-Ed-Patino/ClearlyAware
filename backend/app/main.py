@@ -4,6 +4,7 @@ from app.models.user import User
 from app.models.category import Category
 from app.models.budget import Budget
 from app.models.plaid_item import PlaidItem
+from app.models.transaction import Transaction
 from app.routers.auth import router as auth_router
 from app.routers.budgets import router as budget_router
 from app.routers.dashboard import router as dashboard_router
