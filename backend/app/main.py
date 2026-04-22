@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 # Load all models so SQLAlchemy sees them
 from app.models.user import User
 from app.models.category import Category
@@ -13,6 +14,14 @@ from app.routers.plaid import router as plaid_router
 PREFIX = "/api/v1"
 
 app = FastAPI( title="ClearlyAware", description="Personal budget tracker with bank integration", version="0.1.0" )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(auth_router, prefix=PREFIX)
 app.include_router(budget_router, prefix=PREFIX )
